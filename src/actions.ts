@@ -407,90 +407,68 @@ export const selectLine = (_editor: Editor, selection: EditorSelection) => {
 /**
  * Finds the start position of a sentence from a given position.
  * A sentence is considered to start after a sentence-ending punctuation (. ! ?)
- * followed by whitespace, or at the beginning of the document.
+ * followed by whitespace, or at the beginning of the line.
  */
 const findSentenceStart = (
   editor: Editor,
   pos: EditorPosition,
 ): EditorPosition => {
-  let { line, ch } = pos;
-  let lineContent = editor.getLine(line);
+  const { line } = pos;
+  let ch = pos.ch;
+  const lineContent = editor.getLine(line);
 
-  // Move backwards from the current position
-  while (line >= 0) {
-    // Search backwards in the current line
-    while (ch > 0) {
-      const char = lineContent.charAt(ch - 1);
-      const prevChar = ch > 1 ? lineContent.charAt(ch - 2) : '';
+  // Search backwards in the current line only
+  while (ch > 0) {
+    const char = lineContent.charAt(ch - 1);
+    const prevChar = ch > 1 ? lineContent.charAt(ch - 2) : '';
 
-      // Check if we found a sentence ending (. ! ?) followed by space or newline
-      if (/[.!?]/.test(prevChar) && /\s/.test(char)) {
-        // Skip any additional whitespace
-        while (ch < lineContent.length && /\s/.test(lineContent.charAt(ch))) {
-          ch++;
-        }
-        return { line, ch };
+    // Check if we found a sentence ending (. ! ?) followed by space
+    if (/[.!?]/.test(prevChar) && /\s/.test(char)) {
+      // Skip any additional whitespace
+      while (ch < lineContent.length && /\s/.test(lineContent.charAt(ch))) {
+        ch++;
       }
-      ch--;
+      return { line, ch };
     }
-
-    // Move to the previous line
-    line--;
-    if (line >= 0) {
-      lineContent = editor.getLine(line);
-      ch = lineContent.length;
-    }
+    ch--;
   }
 
-  // If we reached the beginning, return the start of the document
-  return { line: 0, ch: 0 };
+  // If we reached the beginning of the line, return the start of the line
+  return { line, ch: 0 };
 };
 
 /**
  * Finds the end position of a sentence from a given position.
  * A sentence is considered to end at a sentence-ending punctuation (. ! ?)
- * or at the end of the document.
+ * or at the end of the line.
  */
 const findSentenceEnd = (
   editor: Editor,
   pos: EditorPosition,
 ): EditorPosition => {
-  let { line, ch } = pos;
-  let lineContent = editor.getLine(line);
+  const { line } = pos;
+  let ch = pos.ch;
+  const lineContent = editor.getLine(line);
 
-  // Move forwards from the current position
-  while (line < editor.lineCount()) {
-    // Search forwards in the current line
-    while (ch < lineContent.length) {
-      const char = lineContent.charAt(ch);
+  // Search forwards in the current line only
+  while (ch < lineContent.length) {
+    const char = lineContent.charAt(ch);
 
-      // Check if we found a sentence ending (. ! ?)
-      if (/[.!?]/.test(char)) {
-        // Include the punctuation mark
-        ch++;
-        // Skip any trailing whitespace on the same line
-        while (
-          ch < lineContent.length &&
-          /[ \t]/.test(lineContent.charAt(ch))
-        ) {
-          ch++;
-        }
-        return { line, ch };
-      }
+    // Check if we found a sentence ending (. ! ?)
+    if (/[.!?]/.test(char)) {
+      // Include the punctuation mark
       ch++;
+      // Skip any trailing whitespace on the same line
+      while (ch < lineContent.length && /[ \t]/.test(lineContent.charAt(ch))) {
+        ch++;
+      }
+      return { line, ch };
     }
-
-    // Move to the next line
-    line++;
-    if (line < editor.lineCount()) {
-      lineContent = editor.getLine(line);
-      ch = 0;
-    }
+    ch++;
   }
 
-  // If we reached the end, return the end of the document
-  const lastLine = editor.lineCount() - 1;
-  return { line: lastLine, ch: editor.getLine(lastLine).length };
+  // If we reached the end of the line, return the end of the line
+  return { line, ch: lineContent.length };
 };
 
 export const selectSentence = (editor: Editor, selection: EditorSelection) => {
