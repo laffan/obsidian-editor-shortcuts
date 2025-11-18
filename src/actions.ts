@@ -239,6 +239,82 @@ export const deleteToEndOfLine = (
   };
 };
 
+export const deleteToEndOfSentence = (
+  editor: Editor,
+  selection: EditorSelection,
+) => {
+  const pos = selection.head;
+  const lineEndPos = getLineEndPos(pos.line, editor);
+  const restOfLine = editor.getRange(pos, lineEndPos);
+
+  // Find the next sentence-ending punctuation (.!?) followed by space or end of line
+  const sentenceEndMatch = restOfLine.match(/[.!?](?=\s|$)/);
+
+  let endPos: EditorPosition;
+  if (sentenceEndMatch && sentenceEndMatch.index !== undefined) {
+    // Found a sentence end on this line - delete up to and including the punctuation
+    endPos = {
+      line: pos.line,
+      ch: pos.ch + sentenceEndMatch.index + 1,
+    };
+  } else {
+    // No sentence end found on this line - delete to end of line
+    endPos = lineEndPos;
+
+    // If we're at the end of the line, delete the newline too
+    if (pos.line === endPos.line && pos.ch === endPos.ch) {
+      endPos = getLineStartPos(pos.line + 1);
+    }
+  }
+
+  editor.replaceRange('', pos, endPos);
+  return {
+    anchor: pos,
+  };
+};
+
+export const deleteToStartOfSentence = (
+  editor: Editor,
+  selection: EditorSelection,
+) => {
+  const pos = selection.head;
+  const lineStartPos = getLineStartPos(pos.line);
+  const startOfLine = editor.getRange(lineStartPos, pos);
+
+  // Find the last sentence-ending punctuation (.!?) followed by space
+  // We search for the punctuation and any following whitespace
+  const sentenceStartMatches = Array.from(startOfLine.matchAll(/[.!?]\s+/g));
+
+  let startPos: EditorPosition;
+  if (sentenceStartMatches.length > 0) {
+    // Found a sentence end - delete from after the punctuation and space to cursor
+    const lastMatch = sentenceStartMatches[sentenceStartMatches.length - 1];
+    const matchEnd = (lastMatch.index ?? 0) + lastMatch[0].length;
+    startPos = {
+      line: pos.line,
+      ch: lineStartPos.ch + matchEnd,
+    };
+  } else {
+    // No sentence end found - delete to start of line
+    startPos = lineStartPos;
+
+    // If we're already at the start of the line, delete the preceding newline
+    if (pos.line === startPos.line && pos.ch === startPos.ch) {
+      if (pos.line > 0) {
+        startPos = getLineEndPos(pos.line - 1, editor);
+      } else {
+        // We're at the start of the document, do nothing
+        return selection;
+      }
+    }
+  }
+
+  editor.replaceRange('', startPos, pos);
+  return {
+    anchor: startPos,
+  };
+};
+
 export const joinLines = (editor: Editor, selection: EditorSelection) => {
   const { from, to } = getSelectionBoundaries(selection);
   const { line } = from;

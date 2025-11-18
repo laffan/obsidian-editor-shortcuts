@@ -5,6 +5,8 @@ import {
   deleteLine,
   deleteToStartOfLine,
   deleteToEndOfLine,
+  deleteToEndOfSentence,
+  deleteToStartOfSentence,
   expandSelectionToBrackets,
   expandSelectionToQuotes,
   expandSelectionToQuotesOrBrackets,
@@ -99,6 +101,20 @@ export default class CodeEditorShortcuts extends Plugin {
       name: 'Delete to end of line',
       editorCallback: (editor) =>
         withMultipleSelections(editor, deleteToEndOfLine),
+    });
+
+    this.addCommand({
+      id: 'deleteToEndOfSentence',
+      name: 'Delete to end of sentence',
+      editorCallback: (editor) =>
+        withMultipleSelections(editor, deleteToEndOfSentence),
+    });
+
+    this.addCommand({
+      id: 'deleteToStartOfSentence',
+      name: 'Delete to start of sentence',
+      editorCallback: (editor) =>
+        withMultipleSelections(editor, deleteToStartOfSentence),
     });
 
     this.addCommand({
