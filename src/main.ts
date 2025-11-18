@@ -20,6 +20,9 @@ import {
   isProgrammaticSelectionChange,
   selectAllOccurrences,
   selectLine,
+  selectSentence,
+  selectToEndOfSentence,
+  selectToStartOfSentence,
   selectWordOrNextOccurrence,
   setIsManualSelection,
   setIsProgrammaticSelectionChange,
@@ -215,6 +218,27 @@ export default class CodeEditorShortcuts extends Plugin {
         },
       ],
       editorCallback: (editor) => withMultipleSelections(editor, selectLine),
+    });
+
+    this.addCommand({
+      id: 'selectSentence',
+      name: 'Select sentence',
+      editorCallback: (editor) =>
+        withMultipleSelections(editor, selectSentence),
+    });
+
+    this.addCommand({
+      id: 'selectToEndOfSentence',
+      name: 'Select to end of sentence',
+      editorCallback: (editor) =>
+        withMultipleSelections(editor, selectToEndOfSentence),
+    });
+
+    this.addCommand({
+      id: 'selectToStartOfSentence',
+      name: 'Select to start of sentence',
+      editorCallback: (editor) =>
+        withMultipleSelections(editor, selectToStartOfSentence),
     });
 
     this.addCommand({
