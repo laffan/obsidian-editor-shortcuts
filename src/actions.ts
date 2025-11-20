@@ -740,8 +740,9 @@ export const moveSentenceDown = (
   const { from, to } = getSelectionBoundaries(selection);
 
   // Get the boundaries of the current sentence selection
+  // NOTE: Both search from 'from' to find the sentence containing the selection start
   const currentSentenceStart = findSentenceStart(editor, from);
-  const currentSentenceEnd = findSentenceEnd(editor, to);
+  const currentSentenceEnd = findSentenceEnd(editor, from);
 
   // Get the current sentence text
   const currentSentenceText = editor.getRange(currentSentenceStart, currentSentenceEnd);
@@ -888,8 +889,9 @@ export const moveSentenceUp = (
   const { from, to } = getSelectionBoundaries(selection);
 
   // Get the boundaries of the current sentence selection
+  // NOTE: Both search from 'from' to find the sentence containing the selection start
   const currentSentenceStart = findSentenceStart(editor, from);
-  const currentSentenceEnd = findSentenceEnd(editor, to);
+  const currentSentenceEnd = findSentenceEnd(editor, from);
 
   // Get the current sentence text
   const currentSentenceText = editor.getRange(currentSentenceStart, currentSentenceEnd);
