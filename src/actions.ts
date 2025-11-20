@@ -247,15 +247,15 @@ export const deleteToEndOfSentence = (
   const lineEndPos = getLineEndPos(pos.line, editor);
   const restOfLine = editor.getRange(pos, lineEndPos);
 
-  // Find the next sentence-ending punctuation (.!?) followed by space or end of line
-  const sentenceEndMatch = restOfLine.match(/[.!?](?=\s|$)/);
+  // Find the next sentence-ending punctuation (.!?) followed by optional closing delimiters and space or end of line
+  const sentenceEndMatch = restOfLine.match(/[.!?]["')\]}*_`]*(?=\s|$)/);
 
   let endPos: EditorPosition;
   if (sentenceEndMatch && sentenceEndMatch.index !== undefined) {
-    // Found a sentence end on this line - delete up to and including the punctuation
+    // Found a sentence end on this line - delete up to and including the punctuation and closing delimiters
     endPos = {
       line: pos.line,
-      ch: pos.ch + sentenceEndMatch.index + 1,
+      ch: pos.ch + sentenceEndMatch.index + sentenceEndMatch[0].length,
     };
   } else {
     // No sentence end found on this line - delete to end of line
@@ -281,13 +281,13 @@ export const deleteToStartOfSentence = (
   const lineStartPos = getLineStartPos(pos.line);
   const startOfLine = editor.getRange(lineStartPos, pos);
 
-  // Find the last sentence-ending punctuation (.!?) followed by space
-  // We search for the punctuation and any following whitespace
-  const sentenceStartMatches = Array.from(startOfLine.matchAll(/[.!?]\s+/g));
+  // Find the last sentence-ending punctuation (.!?) followed by optional closing delimiters and space
+  // We search for the punctuation, any closing delimiters, and any following whitespace
+  const sentenceStartMatches = Array.from(startOfLine.matchAll(/[.!?]["')\]}*_`]*\s+/g));
 
   let startPos: EditorPosition;
   if (sentenceStartMatches.length > 0) {
-    // Found a sentence end - delete from after the punctuation and space to cursor
+    // Found a sentence end - delete from after the punctuation, closing delimiters, and space to cursor
     const lastMatch = sentenceStartMatches[sentenceStartMatches.length - 1];
     const matchEnd = (lastMatch.index ?? 0) + lastMatch[0].length;
     startPos = {
@@ -483,7 +483,7 @@ export const selectLine = (_editor: Editor, selection: EditorSelection) => {
 /**
  * Finds the start position of a sentence from a given position.
  * A sentence is considered to start after a sentence-ending punctuation (. ! ?)
- * followed by whitespace, or at the beginning of the line.
+ * followed by zero or more closing delimiters and whitespace, or at the beginning of the line.
  */
 const findSentenceStart = (
   editor: Editor,
@@ -495,16 +495,29 @@ const findSentenceStart = (
 
   // Search backwards in the current line only
   while (ch > 0) {
-    const char = lineContent.charAt(ch - 1);
-    const prevChar = ch > 1 ? lineContent.charAt(ch - 2) : '';
+    // Check if the character before current position is whitespace
+    if (ch > 0 && /\s/.test(lineContent.charAt(ch - 1))) {
+      // Found whitespace, now look backwards to see if there's a sentence ending
+      let lookbackPos = ch - 1;
 
-    // Check if we found a sentence ending (. ! ?) followed by space
-    if (/[.!?]/.test(prevChar) && /\s/.test(char)) {
       // Skip any additional whitespace
-      while (ch < lineContent.length && /\s/.test(lineContent.charAt(ch))) {
-        ch++;
+      while (lookbackPos > 0 && /\s/.test(lineContent.charAt(lookbackPos - 1))) {
+        lookbackPos--;
       }
-      return { line, ch };
+
+      // Skip any closing delimiters (quotes, parentheses, brackets, markdown formatting, etc.)
+      while (lookbackPos > 0 && /["')\]}*_`]/.test(lineContent.charAt(lookbackPos - 1))) {
+        lookbackPos--;
+      }
+
+      // Check if we have sentence-ending punctuation
+      if (lookbackPos > 0 && /[.!?]/.test(lineContent.charAt(lookbackPos - 1))) {
+        // Found a sentence ending! Skip forward through whitespace from current position
+        while (ch < lineContent.length && /\s/.test(lineContent.charAt(ch))) {
+          ch++;
+        }
+        return { line, ch };
+      }
     }
     ch--;
   }
@@ -516,6 +529,7 @@ const findSentenceStart = (
 /**
  * Finds the end position of a sentence from a given position.
  * A sentence is considered to end at a sentence-ending punctuation (. ! ?)
+ * followed by zero or more closing delimiters (quotes, parentheses, brackets, etc.)
  * or at the end of the line.
  */
 const findSentenceEnd = (
@@ -534,6 +548,10 @@ const findSentenceEnd = (
     if (/[.!?]/.test(char)) {
       // Include the punctuation mark
       ch++;
+      // Skip any closing delimiters (quotes, parentheses, brackets, markdown formatting, etc.)
+      while (ch < lineContent.length && /["')\]}*_`]/.test(lineContent.charAt(ch))) {
+        ch++;
+      }
       // Skip any trailing whitespace on the same line
       while (ch < lineContent.length && /[ \t]/.test(lineContent.charAt(ch))) {
         ch++;
