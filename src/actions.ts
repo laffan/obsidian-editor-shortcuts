@@ -939,6 +939,21 @@ export const moveSentenceUp = (
     }
   }
 
+  // After skipping whitespace, we might be positioned right after the sentence-ending
+  // punctuation. Move back to ensure we're IN the previous sentence content.
+  // This prevents findSentenceEnd from finding the CURRENT sentence's end.
+  if (prevSentenceSearchPos.ch > 0) {
+    const lineContent = editor.getLine(prevSentenceSearchPos.line);
+    // If we're right after punctuation, move back before it
+    if (prevSentenceSearchPos.ch > 0 && /[.!?]/.test(lineContent.charAt(prevSentenceSearchPos.ch - 1))) {
+      prevSentenceSearchPos = { line: prevSentenceSearchPos.line, ch: prevSentenceSearchPos.ch - 1 };
+    }
+    // Move back one more character to be clearly in the sentence content
+    if (prevSentenceSearchPos.ch > 0) {
+      prevSentenceSearchPos = { line: prevSentenceSearchPos.line, ch: prevSentenceSearchPos.ch - 1 };
+    }
+  }
+
   // Find the boundaries of the previous sentence
   const prevSentenceStart = findSentenceStart(editor, prevSentenceSearchPos);
   const prevSentenceEnd = findSentenceEnd(editor, prevSentenceSearchPos);
