@@ -746,6 +746,9 @@ export const moveSentenceDown = (
   // Get the current sentence text
   const currentSentenceText = editor.getRange(currentSentenceStart, currentSentenceEnd);
 
+  // Calculate current sentence length before any changes
+  const currentSentenceLength = currentSentenceText.length;
+
   // Find the next sentence
   let nextSentenceSearchPos = currentSentenceEnd;
 
@@ -773,11 +776,13 @@ export const moveSentenceDown = (
   const nextSentenceStart = findSentenceStart(editor, nextSentenceSearchPos);
   const nextSentenceEnd = findSentenceEnd(editor, nextSentenceSearchPos);
 
-  // Get the next sentence text
+  // Get the next sentence text and whitespace
   const nextSentenceText = editor.getRange(nextSentenceStart, nextSentenceEnd);
-
-  // Get any whitespace between the sentences
   const betweenText = editor.getRange(currentSentenceEnd, nextSentenceStart);
+
+  // Calculate lengths before replacement
+  const nextSentenceLength = nextSentenceText.length;
+  const betweenLength = betweenText.length;
 
   // Replace both sentences (swap them)
   editor.replaceRange(
@@ -786,12 +791,10 @@ export const moveSentenceDown = (
     nextSentenceEnd
   );
 
-  // Calculate the new position of the moved sentence
-  const nextSentenceLength = editor.posToOffset(nextSentenceEnd) - editor.posToOffset(nextSentenceStart);
-  const betweenLength = editor.posToOffset(nextSentenceStart) - editor.posToOffset(currentSentenceEnd);
-
-  const newStartOffset = editor.posToOffset(currentSentenceStart) + nextSentenceLength + betweenLength;
-  const newEndOffset = newStartOffset + (editor.posToOffset(currentSentenceEnd) - editor.posToOffset(currentSentenceStart));
+  // Calculate the new position based on the string lengths
+  const startOffset = editor.posToOffset(currentSentenceStart);
+  const newStartOffset = startOffset + nextSentenceLength + betweenLength;
+  const newEndOffset = newStartOffset + currentSentenceLength;
 
   const newStart = editor.offsetToPos(newStartOffset);
   const newEnd = editor.offsetToPos(newEndOffset);
@@ -846,6 +849,16 @@ export const shiftSelectionToPreviousSentence = (
     }
   }
 
+  // If we're on sentence-ending punctuation, move back to actual content
+  // This prevents findSentenceEnd from finding the NEXT sentence
+  const lineContent = editor.getLine(searchPos.line);
+  if (searchPos.ch > 0 && /[.!?]/.test(lineContent.charAt(searchPos.ch - 1))) {
+    // Move back before the punctuation to land in the sentence content
+    if (searchPos.ch > 1) {
+      searchPos = { line: searchPos.line, ch: searchPos.ch - 2 };
+    }
+  }
+
   // Find the start and end of the previous sentence
   const prevSentenceStart = findSentenceStart(editor, searchPos);
   const prevSentenceEnd = findSentenceEnd(editor, searchPos);
@@ -869,6 +882,9 @@ export const moveSentenceUp = (
 
   // Get the current sentence text
   const currentSentenceText = editor.getRange(currentSentenceStart, currentSentenceEnd);
+
+  // Calculate current sentence length before any changes
+  const currentSentenceLength = currentSentenceText.length;
 
   // Find the previous sentence
   let prevSentenceSearchPos = currentSentenceStart;
@@ -909,10 +925,8 @@ export const moveSentenceUp = (
   const prevSentenceStart = findSentenceStart(editor, prevSentenceSearchPos);
   const prevSentenceEnd = findSentenceEnd(editor, prevSentenceSearchPos);
 
-  // Get the previous sentence text
+  // Get the previous sentence text and whitespace
   const prevSentenceText = editor.getRange(prevSentenceStart, prevSentenceEnd);
-
-  // Get any whitespace between the sentences
   const betweenText = editor.getRange(prevSentenceEnd, currentSentenceStart);
 
   // Replace both sentences (swap them)
@@ -922,9 +936,7 @@ export const moveSentenceUp = (
     currentSentenceEnd
   );
 
-  // Calculate the new position of the moved sentence
-  const currentSentenceLength = editor.posToOffset(currentSentenceEnd) - editor.posToOffset(currentSentenceStart);
-
+  // Calculate the new position based on the start position and string length
   const newStart = prevSentenceStart;
   const newEndOffset = editor.posToOffset(prevSentenceStart) + currentSentenceLength;
   const newEnd = editor.offsetToPos(newEndOffset);

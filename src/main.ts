@@ -255,14 +255,14 @@ export default class CodeEditorShortcuts extends Plugin {
 
     this.addCommand({
       id: 'moveSentenceDown',
-      name: 'Move sentence down',
+      name: 'Move sentence forward',
       editorCallback: (editor) =>
         withMultipleSelections(editor, moveSentenceDown),
     });
 
     this.addCommand({
       id: 'moveSentenceUp',
-      name: 'Move sentence up',
+      name: 'Move sentence back',
       editorCallback: (editor) =>
         withMultipleSelections(editor, moveSentenceUp),
     });
