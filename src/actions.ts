@@ -899,6 +899,11 @@ export const moveSentenceUp = (
   // Calculate current sentence length before any changes
   const currentSentenceLength = currentSentenceText.length;
 
+  console.log('moveSentenceUp DEBUG:');
+  console.log('  Selection from/to:', from, to);
+  console.log('  Current sentence:', JSON.stringify(currentSentenceText));
+  console.log('  Current sentence start/end:', currentSentenceStart, currentSentenceEnd);
+
   // Find the previous sentence
   let prevSentenceSearchPos = currentSentenceStart;
 
@@ -942,6 +947,11 @@ export const moveSentenceUp = (
   const prevSentenceText = editor.getRange(prevSentenceStart, prevSentenceEnd);
   const betweenText = editor.getRange(prevSentenceEnd, currentSentenceStart);
 
+  console.log('  Previous sentence:', JSON.stringify(prevSentenceText));
+  console.log('  Previous sentence start/end:', prevSentenceStart, prevSentenceEnd);
+  console.log('  Between text:', JSON.stringify(betweenText));
+  console.log('  Will replace range:', prevSentenceStart, 'to', currentSentenceEnd);
+
   // IMPORTANT: Calculate the starting offset BEFORE the replacement
   const startOffset = editor.posToOffset(prevSentenceStart);
 
@@ -958,6 +968,10 @@ export const moveSentenceUp = (
 
   const newStart = editor.offsetToPos(newStartOffset);
   const newEnd = editor.offsetToPos(newEndOffset);
+
+  console.log('  New selection offsets:', newStartOffset, '->', newEndOffset);
+  console.log('  New selection positions:', newStart, '->', newEnd);
+  console.log('  New selection text:', JSON.stringify(editor.getRange(newStart, newEnd)));
 
   return { anchor: newStart, head: newEnd };
 };
