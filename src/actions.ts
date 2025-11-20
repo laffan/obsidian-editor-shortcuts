@@ -548,7 +548,63 @@ const findSentenceEnd = (
 };
 
 export const selectSentence = (editor: Editor, selection: EditorSelection) => {
+  const { from, to } = getSelectionBoundaries(selection);
   const pos = selection.head;
+
+  // Check if we already have a selection (not just a cursor)
+  const hasSelection = from.line !== to.line || from.ch !== to.ch;
+
+  if (hasSelection) {
+    // We have a selection, try to expand it
+    const currentEndLine = to.line;
+    const currentEndCh = to.ch;
+
+    // Check if there's more content on the current line after the selection
+    const currentLineContent = editor.getLine(currentEndLine);
+    const restOfCurrentLine = currentLineContent.substring(currentEndCh);
+
+    // If there's non-whitespace content remaining on the current line, extend to next sentence
+    if (/\S/.test(restOfCurrentLine)) {
+      const nextSentenceEnd = findSentenceEnd(editor, { line: currentEndLine, ch: currentEndCh });
+      // Only extend if we actually found a new sentence end
+      if (nextSentenceEnd.ch > currentEndCh) {
+        return {
+          anchor: from,
+          head: nextSentenceEnd
+        };
+      }
+    }
+
+    // We're at the end of the current line, try to extend to the next line
+    const nextLineNum = currentEndLine + 1;
+
+    if (nextLineNum >= editor.lineCount()) {
+      // No more lines to expand to
+      return selection;
+    }
+
+    const nextLineContent = editor.getLine(nextLineNum);
+
+    // If the next line is empty (or only whitespace), extend to include it
+    if (nextLineContent.trim().length === 0) {
+      return {
+        anchor: from,
+        head: { line: nextLineNum + 1, ch: 0 }
+      };
+    }
+
+    // Next line has content, find the sentence end on that line
+    const firstNonWhitespace = nextLineContent.search(/\S/);
+    const startPos = { line: nextLineNum, ch: firstNonWhitespace >= 0 ? firstNonWhitespace : 0 };
+    const nextSentenceEnd = findSentenceEnd(editor, startPos);
+
+    return {
+      anchor: from,
+      head: nextSentenceEnd
+    };
+  }
+
+  // No selection yet, select the current sentence (limited to current line)
   const lineContent = editor.getLine(pos.line);
 
   // Skip leading whitespace to find the actual start of content
