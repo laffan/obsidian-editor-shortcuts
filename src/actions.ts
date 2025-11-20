@@ -784,6 +784,9 @@ export const moveSentenceDown = (
   const nextSentenceLength = nextSentenceText.length;
   const betweenLength = betweenText.length;
 
+  // IMPORTANT: Calculate the starting offset BEFORE the replacement
+  const startOffset = editor.posToOffset(currentSentenceStart);
+
   // Replace both sentences (swap them)
   editor.replaceRange(
     nextSentenceText + betweenText + currentSentenceText,
@@ -792,7 +795,6 @@ export const moveSentenceDown = (
   );
 
   // Calculate the new position based on the string lengths
-  const startOffset = editor.posToOffset(currentSentenceStart);
   const newStartOffset = startOffset + nextSentenceLength + betweenLength;
   const newEndOffset = newStartOffset + currentSentenceLength;
 
@@ -929,6 +931,9 @@ export const moveSentenceUp = (
   const prevSentenceText = editor.getRange(prevSentenceStart, prevSentenceEnd);
   const betweenText = editor.getRange(prevSentenceEnd, currentSentenceStart);
 
+  // IMPORTANT: Calculate the starting offset BEFORE the replacement
+  const startOffset = editor.posToOffset(prevSentenceStart);
+
   // Replace both sentences (swap them)
   editor.replaceRange(
     currentSentenceText + betweenText + prevSentenceText,
@@ -937,8 +942,10 @@ export const moveSentenceUp = (
   );
 
   // Calculate the new position based on the start position and string length
-  const newStart = prevSentenceStart;
-  const newEndOffset = editor.posToOffset(prevSentenceStart) + currentSentenceLength;
+  const newStartOffset = startOffset;
+  const newEndOffset = newStartOffset + currentSentenceLength;
+
+  const newStart = editor.offsetToPos(newStartOffset);
   const newEnd = editor.offsetToPos(newEndOffset);
 
   return { anchor: newStart, head: newEnd };
