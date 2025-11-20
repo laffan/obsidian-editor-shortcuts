@@ -648,60 +648,20 @@ export const reduceSentenceSelection = (
     };
   }
 
-  // We're in the middle of a line with content
-  const currentLineContent = editor.getLine(to.line);
-
-  // Check if we're at the end of the line
-  if (to.ch >= currentLineContent.length) {
-    // Check if there's content before this position on the same line
-    const lineStart = getLineStartPos(to.line);
-    const contentBeforeCursor = editor.getRange(lineStart, to);
-
-    // Find all sentence endings before the current position
-    const sentenceMatches = Array.from(contentBeforeCursor.matchAll(/[.!?](?:\s|$)/g));
-
-    if (sentenceMatches.length >= 2) {
-      // Reduce to the second-to-last sentence ending (last one is current position)
-      const previousMatch = sentenceMatches[sentenceMatches.length - 2];
-      const matchEnd = (previousMatch.index ?? 0) + previousMatch[0].length;
-      const newHead = { line: to.line, ch: lineStart.ch + matchEnd };
-
-      // Make sure we're not reducing to a point before or at the anchor
-      if (newHead.line > from.line || (newHead.line === from.line && newHead.ch > from.ch)) {
-        return {
-          anchor: from,
-          head: newHead,
-        };
-      }
-    }
-
-    // No sentence ending found, or would reduce past anchor - go to previous line
-    if (to.line > from.line) {
-      const prevLine = to.line - 1;
-      const prevLineContent = editor.getLine(prevLine);
-      return {
-        anchor: from,
-        head: { line: prevLine, ch: prevLineContent.length },
-      };
-    }
-
-    // We're on the same line as anchor, reduce to just the first sentence
-    const sentenceStart = findSentenceStart(editor, from);
-    const sentenceEnd = findSentenceEnd(editor, from);
-    return { anchor: sentenceStart, head: sentenceEnd };
-  }
-
-  // We're in the middle of a line, find the previous sentence boundary
-  const lineStart = getLineStartPos(to.line);
-  const contentBeforeCursor = editor.getRange(lineStart, to);
-  const sentenceMatches = Array.from(contentBeforeCursor.matchAll(/[.!?](?:\s|$)/g));
+  // Search for sentence boundaries across all lines in the selection
+  // This handles cases where sentences span multiple lines
+  const selectedContent = editor.getRange(from, to);
+  const sentenceMatches = Array.from(selectedContent.matchAll(/[.!?](?:\s|$)/g));
 
   // We need at least 2 matches: one for current position, one to reduce to
   if (sentenceMatches.length >= 2) {
-    // Reduce to the second-to-last match (last one is current position)
+    // Reduce to the second-to-last sentence ending (last one is current position)
     const previousMatch = sentenceMatches[sentenceMatches.length - 2];
     const matchEnd = (previousMatch.index ?? 0) + previousMatch[0].length;
-    const newHead = { line: to.line, ch: lineStart.ch + matchEnd };
+
+    // Convert the character offset back to line/ch position
+    const newHeadOffset = editor.posToOffset(from) + matchEnd;
+    const newHead = editor.offsetToPos(newHeadOffset);
 
     // Make sure we're not reducing to a point before or at the anchor
     if (newHead.line > from.line || (newHead.line === from.line && newHead.ch > from.ch)) {
@@ -712,7 +672,7 @@ export const reduceSentenceSelection = (
     }
   }
 
-  // Can't reduce further, return to just the first sentence
+  // Only one sentence match found (or would reduce past anchor), return to just the first sentence
   const sentenceStart = findSentenceStart(editor, from);
   const sentenceEnd = findSentenceEnd(editor, from);
   return { anchor: sentenceStart, head: sentenceEnd };
