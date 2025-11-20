@@ -841,7 +841,12 @@ export const moveSentenceDown = (
 
   // Get the next sentence text and whitespace
   const nextSentenceText = editor.getRange(nextSentenceStart, nextSentenceEnd);
-  const betweenText = editor.getRange(currentSentenceEnd, nextSentenceStart);
+  let betweenText = editor.getRange(currentSentenceEnd, nextSentenceStart);
+
+  // Ensure there's at least one space between sentences when swapping
+  if (betweenText.trim().length === 0 && betweenText.length === 0) {
+    betweenText = ' ';
+  }
 
   // Calculate lengths before replacement
   const nextSentenceLength = nextSentenceText.length;
@@ -1078,12 +1083,17 @@ export const moveSentenceUp = (
 
   // Get the previous sentence text and whitespace
   const prevSentenceText = editor.getRange(prevSentenceStart, prevSentenceEnd);
-  const betweenText = editor.getRange(prevSentenceEnd, currentSentenceStart);
+  let betweenText = editor.getRange(prevSentenceEnd, currentSentenceStart);
 
   console.log('  Previous sentence:', JSON.stringify(prevSentenceText));
   console.log('  Previous sentence start/end:', prevSentenceStart, prevSentenceEnd);
   console.log('  Between text:', JSON.stringify(betweenText));
   console.log('  Will replace range:', prevSentenceStart, 'to', currentSentenceEnd);
+
+  // Ensure there's at least one space between sentences when swapping
+  if (betweenText.trim().length === 0 && betweenText.length === 0) {
+    betweenText = ' ';
+  }
 
   // IMPORTANT: Calculate the starting offset BEFORE the replacement
   const startOffset = editor.posToOffset(prevSentenceStart);
