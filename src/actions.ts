@@ -730,6 +730,76 @@ export const shiftSelectionToNextSentence = (
 };
 
 /**
+ * Moves the selected sentence(s) down by swapping with the next sentence.
+ * The moved sentence remains selected in its new position.
+ */
+export const moveSentenceDown = (
+  editor: Editor,
+  selection: EditorSelection,
+) => {
+  const { from, to } = getSelectionBoundaries(selection);
+
+  // Get the boundaries of the current sentence selection
+  const currentSentenceStart = findSentenceStart(editor, from);
+  const currentSentenceEnd = findSentenceEnd(editor, to);
+
+  // Get the current sentence text
+  const currentSentenceText = editor.getRange(currentSentenceStart, currentSentenceEnd);
+
+  // Find the next sentence
+  let nextSentenceSearchPos = currentSentenceEnd;
+
+  // Skip whitespace after current sentence
+  while (nextSentenceSearchPos.line < editor.lineCount()) {
+    const lineContent = editor.getLine(nextSentenceSearchPos.line);
+
+    if (nextSentenceSearchPos.ch < lineContent.length) {
+      const char = lineContent.charAt(nextSentenceSearchPos.ch);
+      if (!/\s/.test(char)) {
+        break;
+      }
+      nextSentenceSearchPos = { line: nextSentenceSearchPos.line, ch: nextSentenceSearchPos.ch + 1 };
+    } else {
+      // Move to next line
+      if (nextSentenceSearchPos.line + 1 >= editor.lineCount()) {
+        // No more content
+        return selection;
+      }
+      nextSentenceSearchPos = { line: nextSentenceSearchPos.line + 1, ch: 0 };
+    }
+  }
+
+  // Find the boundaries of the next sentence
+  const nextSentenceStart = findSentenceStart(editor, nextSentenceSearchPos);
+  const nextSentenceEnd = findSentenceEnd(editor, nextSentenceSearchPos);
+
+  // Get the next sentence text
+  const nextSentenceText = editor.getRange(nextSentenceStart, nextSentenceEnd);
+
+  // Get any whitespace between the sentences
+  const betweenText = editor.getRange(currentSentenceEnd, nextSentenceStart);
+
+  // Replace both sentences (swap them)
+  editor.replaceRange(
+    nextSentenceText + betweenText + currentSentenceText,
+    currentSentenceStart,
+    nextSentenceEnd
+  );
+
+  // Calculate the new position of the moved sentence
+  const nextSentenceLength = editor.posToOffset(nextSentenceEnd) - editor.posToOffset(nextSentenceStart);
+  const betweenLength = editor.posToOffset(nextSentenceStart) - editor.posToOffset(currentSentenceEnd);
+
+  const newStartOffset = editor.posToOffset(currentSentenceStart) + nextSentenceLength + betweenLength;
+  const newEndOffset = newStartOffset + (editor.posToOffset(currentSentenceEnd) - editor.posToOffset(currentSentenceStart));
+
+  const newStart = editor.offsetToPos(newStartOffset);
+  const newEnd = editor.offsetToPos(newEndOffset);
+
+  return { anchor: newStart, head: newEnd };
+};
+
+/**
  * Shifts the selection to the previous sentence.
  * Finds the previous sentence before the current selection and moves the selection to it.
  */
@@ -781,6 +851,85 @@ export const shiftSelectionToPreviousSentence = (
   const prevSentenceEnd = findSentenceEnd(editor, searchPos);
 
   return { anchor: prevSentenceStart, head: prevSentenceEnd };
+};
+
+/**
+ * Moves the selected sentence(s) up by swapping with the previous sentence.
+ * The moved sentence remains selected in its new position.
+ */
+export const moveSentenceUp = (
+  editor: Editor,
+  selection: EditorSelection,
+) => {
+  const { from, to } = getSelectionBoundaries(selection);
+
+  // Get the boundaries of the current sentence selection
+  const currentSentenceStart = findSentenceStart(editor, from);
+  const currentSentenceEnd = findSentenceEnd(editor, to);
+
+  // Get the current sentence text
+  const currentSentenceText = editor.getRange(currentSentenceStart, currentSentenceEnd);
+
+  // Find the previous sentence
+  let prevSentenceSearchPos = currentSentenceStart;
+
+  // Move back one character to get out of current sentence
+  if (prevSentenceSearchPos.ch > 0) {
+    prevSentenceSearchPos = { line: prevSentenceSearchPos.line, ch: prevSentenceSearchPos.ch - 1 };
+  } else if (prevSentenceSearchPos.line > 0) {
+    const prevLine = prevSentenceSearchPos.line - 1;
+    const prevLineContent = editor.getLine(prevLine);
+    prevSentenceSearchPos = { line: prevLine, ch: prevLineContent.length };
+  } else {
+    // Already at the beginning of the document
+    return selection;
+  }
+
+  // Skip backwards through whitespace
+  while (prevSentenceSearchPos.ch > 0 || prevSentenceSearchPos.line > 0) {
+    const lineContent = editor.getLine(prevSentenceSearchPos.line);
+
+    if (prevSentenceSearchPos.ch > 0) {
+      const char = lineContent.charAt(prevSentenceSearchPos.ch - 1);
+      if (!/\s/.test(char)) {
+        break;
+      }
+      prevSentenceSearchPos = { line: prevSentenceSearchPos.line, ch: prevSentenceSearchPos.ch - 1 };
+    } else {
+      if (prevSentenceSearchPos.line === 0) {
+        break;
+      }
+      const prevLine = prevSentenceSearchPos.line - 1;
+      const prevLineContent = editor.getLine(prevLine);
+      prevSentenceSearchPos = { line: prevLine, ch: prevLineContent.length };
+    }
+  }
+
+  // Find the boundaries of the previous sentence
+  const prevSentenceStart = findSentenceStart(editor, prevSentenceSearchPos);
+  const prevSentenceEnd = findSentenceEnd(editor, prevSentenceSearchPos);
+
+  // Get the previous sentence text
+  const prevSentenceText = editor.getRange(prevSentenceStart, prevSentenceEnd);
+
+  // Get any whitespace between the sentences
+  const betweenText = editor.getRange(prevSentenceEnd, currentSentenceStart);
+
+  // Replace both sentences (swap them)
+  editor.replaceRange(
+    currentSentenceText + betweenText + prevSentenceText,
+    prevSentenceStart,
+    currentSentenceEnd
+  );
+
+  // Calculate the new position of the moved sentence
+  const currentSentenceLength = editor.posToOffset(currentSentenceEnd) - editor.posToOffset(currentSentenceStart);
+
+  const newStart = prevSentenceStart;
+  const newEndOffset = editor.posToOffset(prevSentenceStart) + currentSentenceLength;
+  const newEnd = editor.offsetToPos(newEndOffset);
+
+  return { anchor: newStart, head: newEnd };
 };
 
 export const selectToEndOfSentence = (

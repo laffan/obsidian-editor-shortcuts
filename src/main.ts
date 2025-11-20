@@ -24,6 +24,8 @@ import {
   reduceSentenceSelection,
   shiftSelectionToNextSentence,
   shiftSelectionToPreviousSentence,
+  moveSentenceDown,
+  moveSentenceUp,
   selectToEndOfSentence,
   selectToStartOfSentence,
   selectWordOrNextOccurrence,
@@ -249,6 +251,20 @@ export default class CodeEditorShortcuts extends Plugin {
       name: 'Shift selection to previous sentence',
       editorCallback: (editor) =>
         withMultipleSelections(editor, shiftSelectionToPreviousSentence),
+    });
+
+    this.addCommand({
+      id: 'moveSentenceDown',
+      name: 'Move sentence down',
+      editorCallback: (editor) =>
+        withMultipleSelections(editor, moveSentenceDown),
+    });
+
+    this.addCommand({
+      id: 'moveSentenceUp',
+      name: 'Move sentence up',
+      editorCallback: (editor) =>
+        withMultipleSelections(editor, moveSentenceUp),
     });
 
     this.addCommand({
