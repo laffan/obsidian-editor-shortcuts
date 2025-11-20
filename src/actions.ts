@@ -808,11 +808,22 @@ export const moveSentenceDown = (
   if (crossesParagraphBreak && paragraphBreakStart && paragraphBreakEnd) {
     console.log('  Crosses paragraph break, moving without swapping');
 
+    // IMPORTANT: Calculate all offsets BEFORE modifying the document
+    const paragraphBreakEndOffset = editor.posToOffset(paragraphBreakEnd);
+    const currentSentenceStartOffset = editor.posToOffset(currentSentenceStart);
+    const currentSentenceLength = editor.posToOffset(currentSentenceEnd) - currentSentenceStartOffset;
+
     // Remove sentence from current position
     editor.replaceRange('', currentSentenceStart, currentSentenceEnd);
 
-    // Insert at start of next paragraph
-    const insertPos = editor.offsetToPos(editor.posToOffset(paragraphBreakEnd) - (editor.posToOffset(currentSentenceEnd) - editor.posToOffset(currentSentenceStart)));
+    // Calculate insert position, adjusting for the deletion
+    let insertOffset = paragraphBreakEndOffset;
+    if (paragraphBreakEndOffset > currentSentenceStartOffset) {
+      // The insert point is after where we deleted, so adjust backward
+      insertOffset -= currentSentenceLength;
+    }
+
+    const insertPos = editor.offsetToPos(insertOffset);
     editor.replaceRange(currentSentenceText, insertPos);
 
     // Select the moved sentence
@@ -1019,13 +1030,22 @@ export const moveSentenceUp = (
     console.log('  Crosses paragraph break, moving without swapping');
     console.log('  Paragraph break from', paragraphBreakStart, 'to', paragraphBreakEnd);
 
+    // IMPORTANT: Calculate all offsets BEFORE modifying the document
+    const paragraphBreakStartOffset = editor.posToOffset(paragraphBreakStart);
+    const currentSentenceStartOffset = editor.posToOffset(currentSentenceStart);
+    const currentSentenceLength = editor.posToOffset(currentSentenceEnd) - currentSentenceStartOffset;
+
     // Remove sentence from current position
     editor.replaceRange('', currentSentenceStart, currentSentenceEnd);
 
-    // Insert at end of previous paragraph (after adjusting for the deletion)
-    const insertPos = editor.offsetToPos(
-      editor.posToOffset(paragraphBreakStart) - (editor.posToOffset(currentSentenceEnd) - editor.posToOffset(currentSentenceStart))
-    );
+    // Calculate insert position, adjusting for the deletion
+    let insertOffset = paragraphBreakStartOffset;
+    if (paragraphBreakStartOffset > currentSentenceStartOffset) {
+      // The insert point is after where we deleted, so adjust backward
+      insertOffset -= currentSentenceLength;
+    }
+
+    const insertPos = editor.offsetToPos(insertOffset);
     editor.replaceRange(currentSentenceText, insertPos);
 
     // Select the moved sentence
