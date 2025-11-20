@@ -843,10 +843,18 @@ export const moveSentenceDown = (
   const nextSentenceText = editor.getRange(nextSentenceStart, nextSentenceEnd);
   let betweenText = editor.getRange(currentSentenceEnd, nextSentenceStart);
 
+  console.log('  Next sentence:', JSON.stringify(nextSentenceText));
+  console.log('  Between text before:', JSON.stringify(betweenText));
+  console.log('  currentSentenceText ends with space?', /\s$/.test(currentSentenceText));
+  console.log('  nextSentenceText ends with space?', /\s$/.test(nextSentenceText));
+
   // Ensure there's at least one space between sentences when swapping
   if (betweenText.trim().length === 0 && betweenText.length === 0) {
+    console.log('  Adding space because betweenText is empty');
     betweenText = ' ';
   }
+
+  console.log('  Between text after:', JSON.stringify(betweenText));
 
   // Calculate lengths before replacement
   const nextSentenceLength = nextSentenceText.length;
