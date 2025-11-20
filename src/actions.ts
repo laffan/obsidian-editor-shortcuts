@@ -782,11 +782,13 @@ export const moveSentenceDown = (
     // End boundary: find the sentence containing the end of selection
     const endSentenceStart = findSentenceStart(editor, to);
 
-    // Check if findSentenceStart jumped forward past 'to' (can happen when 'to' is in
-    // trailing whitespace after a sentence). If so, 'to' is between sentences, so we
-    // should use it as-is rather than expanding to include the next sentence.
-    if (endSentenceStart.line > to.line || (endSentenceStart.line === to.line && endSentenceStart.ch > to.ch)) {
-      // 'to' is in trailing whitespace after a sentence, use it directly
+    // Check if findSentenceStart jumped forward past 'to' or returned exactly 'to'
+    // (can happen when 'to' is in trailing whitespace or at a sentence boundary).
+    // If so, 'to' is between sentences, so we should use it as-is rather than
+    // expanding to include the next sentence.
+    if (endSentenceStart.line > to.line ||
+        (endSentenceStart.line === to.line && endSentenceStart.ch >= to.ch)) {
+      // 'to' is at or after a sentence boundary, use it directly
       currentSentenceEnd = to;
     } else {
       // 'to' is within a sentence, find that sentence's end
@@ -1039,11 +1041,13 @@ export const moveSentenceUp = (
     // End boundary: find the sentence containing the end of selection
     const endSentenceStart = findSentenceStart(editor, to);
 
-    // Check if findSentenceStart jumped forward past 'to' (can happen when 'to' is in
-    // trailing whitespace after a sentence). If so, 'to' is between sentences, so we
-    // should use it as-is rather than expanding to include the next sentence.
-    if (endSentenceStart.line > to.line || (endSentenceStart.line === to.line && endSentenceStart.ch > to.ch)) {
-      // 'to' is in trailing whitespace after a sentence, use it directly
+    // Check if findSentenceStart jumped forward past 'to' or returned exactly 'to'
+    // (can happen when 'to' is in trailing whitespace or at a sentence boundary).
+    // If so, 'to' is between sentences, so we should use it as-is rather than
+    // expanding to include the next sentence.
+    if (endSentenceStart.line > to.line ||
+        (endSentenceStart.line === to.line && endSentenceStart.ch >= to.ch)) {
+      // 'to' is at or after a sentence boundary, use it directly
       currentSentenceEnd = to;
     } else {
       // 'to' is within a sentence, find that sentence's end
