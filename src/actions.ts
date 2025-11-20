@@ -749,6 +749,11 @@ export const moveSentenceDown = (
   // Calculate current sentence length before any changes
   const currentSentenceLength = currentSentenceText.length;
 
+  console.log('moveSentenceDown DEBUG:');
+  console.log('  Selection from/to:', from, to);
+  console.log('  Current sentence:', JSON.stringify(currentSentenceText));
+  console.log('  Current sentence length:', currentSentenceLength);
+
   // Find the next sentence
   let nextSentenceSearchPos = currentSentenceEnd;
 
@@ -800,6 +805,10 @@ export const moveSentenceDown = (
 
   const newStart = editor.offsetToPos(newStartOffset);
   const newEnd = editor.offsetToPos(newEndOffset);
+
+  console.log('  New selection offsets:', newStartOffset, '->', newEndOffset);
+  console.log('  New selection positions:', newStart, '->', newEnd);
+  console.log('  New selection text:', JSON.stringify(editor.getRange(newStart, newEnd)));
 
   return { anchor: newStart, head: newEnd };
 };
