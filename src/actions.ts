@@ -778,10 +778,20 @@ export const moveSentenceDown = (
     // Move the entire selection, snapped to sentence boundaries
     // Start boundary: find sentence start from the beginning of selection
     currentSentenceStart = findSentenceStart(editor, from);
+
     // End boundary: find the sentence containing the end of selection
-    // (find its start first, then find the end from that start to avoid overshooting)
     const endSentenceStart = findSentenceStart(editor, to);
-    currentSentenceEnd = findSentenceEnd(editor, endSentenceStart);
+
+    // Check if findSentenceStart jumped forward past 'to' (can happen when 'to' is in
+    // trailing whitespace after a sentence). If so, 'to' is between sentences, so we
+    // should use it as-is rather than expanding to include the next sentence.
+    if (endSentenceStart.line > to.line || (endSentenceStart.line === to.line && endSentenceStart.ch > to.ch)) {
+      // 'to' is in trailing whitespace after a sentence, use it directly
+      currentSentenceEnd = to;
+    } else {
+      // 'to' is within a sentence, find that sentence's end
+      currentSentenceEnd = findSentenceEnd(editor, endSentenceStart);
+    }
   } else {
     // No selection, just move the sentence containing the cursor
     currentSentenceStart = findSentenceStart(editor, from);
@@ -1025,10 +1035,20 @@ export const moveSentenceUp = (
     // Move the entire selection, snapped to sentence boundaries
     // Start boundary: find sentence start from the beginning of selection
     currentSentenceStart = findSentenceStart(editor, from);
+
     // End boundary: find the sentence containing the end of selection
-    // (find its start first, then find the end from that start to avoid overshooting)
     const endSentenceStart = findSentenceStart(editor, to);
-    currentSentenceEnd = findSentenceEnd(editor, endSentenceStart);
+
+    // Check if findSentenceStart jumped forward past 'to' (can happen when 'to' is in
+    // trailing whitespace after a sentence). If so, 'to' is between sentences, so we
+    // should use it as-is rather than expanding to include the next sentence.
+    if (endSentenceStart.line > to.line || (endSentenceStart.line === to.line && endSentenceStart.ch > to.ch)) {
+      // 'to' is in trailing whitespace after a sentence, use it directly
+      currentSentenceEnd = to;
+    } else {
+      // 'to' is within a sentence, find that sentence's end
+      currentSentenceEnd = findSentenceEnd(editor, endSentenceStart);
+    }
   } else {
     // No selection, just move the sentence containing the cursor
     currentSentenceStart = findSentenceStart(editor, from);
