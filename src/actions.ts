@@ -625,6 +625,14 @@ export const selectSentence = (editor: Editor, selection: EditorSelection) => {
   // No selection yet, select the current sentence (limited to current line)
   const lineContent = editor.getLine(pos.line);
 
+  // If the current line is empty or only whitespace, select the entire line
+  if (lineContent.trim().length === 0) {
+    return {
+      anchor: { line: pos.line, ch: 0 },
+      head: { line: pos.line + 1, ch: 0 }
+    };
+  }
+
   // Skip leading whitespace to find the actual start of content
   let startSearchPos = pos;
   if (/^\s*$/.test(lineContent.substring(0, pos.ch))) {
