@@ -849,8 +849,9 @@ export const moveSentenceDown = (
   console.log('  nextSentenceText ends with space?', /\s$/.test(nextSentenceText));
 
   // Ensure there's at least one space between sentences when swapping
-  if (betweenText.trim().length === 0 && betweenText.length === 0) {
-    console.log('  Adding space because betweenText is empty');
+  // Only add space if betweenText is empty AND currentSentence doesn't already end with space
+  if (betweenText.length === 0 && !/\s$/.test(currentSentenceText)) {
+    console.log('  Adding space because betweenText is empty and no trailing space');
     betweenText = ' ';
   }
 
@@ -1099,7 +1100,8 @@ export const moveSentenceUp = (
   console.log('  Will replace range:', prevSentenceStart, 'to', currentSentenceEnd);
 
   // Ensure there's at least one space between sentences when swapping
-  if (betweenText.trim().length === 0 && betweenText.length === 0) {
+  // Only add space if betweenText is empty AND prevSentence doesn't already end with space
+  if (betweenText.length === 0 && !/\s$/.test(prevSentenceText)) {
     betweenText = ' ';
   }
 
