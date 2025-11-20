@@ -756,8 +756,10 @@ export const shiftSelectionToNextSentence = (
 };
 
 /**
- * Moves the selected sentence(s) down by swapping with the next sentence.
- * The moved sentence remains selected in its new position.
+ * Moves the current selection down by swapping with the next sentence.
+ * If there's a selection, moves the entire selection (snapped to sentence boundaries).
+ * If there's just a cursor, moves the sentence containing the cursor.
+ * The moved selection remains selected in its new position.
  */
 export const moveSentenceDown = (
   editor: Editor,
@@ -765,10 +767,24 @@ export const moveSentenceDown = (
 ) => {
   const { from, to } = getSelectionBoundaries(selection);
 
-  // Get the boundaries of the current sentence selection
-  // NOTE: Both search from 'from' to find the sentence containing the selection start
-  const currentSentenceStart = findSentenceStart(editor, from);
-  const currentSentenceEnd = findSentenceEnd(editor, from);
+  // Check if there's an actual selection (not just a cursor)
+  const hasSelection = from.line !== to.line || from.ch !== to.ch;
+
+  // Determine what to move: either the selection or the sentence at cursor
+  let currentSentenceStart: EditorPosition;
+  let currentSentenceEnd: EditorPosition;
+
+  if (hasSelection) {
+    // Move the entire selection, snapped to sentence boundaries
+    // Start boundary: find sentence start from the beginning of selection
+    currentSentenceStart = findSentenceStart(editor, from);
+    // End boundary: find sentence end from the end of selection
+    currentSentenceEnd = findSentenceEnd(editor, to);
+  } else {
+    // No selection, just move the sentence containing the cursor
+    currentSentenceStart = findSentenceStart(editor, from);
+    currentSentenceEnd = findSentenceEnd(editor, from);
+  }
 
   // Get the current sentence text
   const currentSentenceText = editor.getRange(currentSentenceStart, currentSentenceEnd);
@@ -778,6 +794,7 @@ export const moveSentenceDown = (
 
   console.log('moveSentenceDown DEBUG:');
   console.log('  Selection from/to:', from, to);
+  console.log('  Has selection:', hasSelection);
   console.log('  Current sentence:', JSON.stringify(currentSentenceText));
   console.log('  Current sentence length:', currentSentenceLength);
 
@@ -984,8 +1001,10 @@ export const shiftSelectionToPreviousSentence = (
 };
 
 /**
- * Moves the selected sentence(s) up by swapping with the previous sentence.
- * The moved sentence remains selected in its new position.
+ * Moves the current selection up by swapping with the previous sentence.
+ * If there's a selection, moves the entire selection (snapped to sentence boundaries).
+ * If there's just a cursor, moves the sentence containing the cursor.
+ * The moved selection remains selected in its new position.
  */
 export const moveSentenceUp = (
   editor: Editor,
@@ -993,10 +1012,24 @@ export const moveSentenceUp = (
 ) => {
   const { from, to } = getSelectionBoundaries(selection);
 
-  // Get the boundaries of the current sentence selection
-  // NOTE: Both search from 'from' to find the sentence containing the selection start
-  const currentSentenceStart = findSentenceStart(editor, from);
-  const currentSentenceEnd = findSentenceEnd(editor, from);
+  // Check if there's an actual selection (not just a cursor)
+  const hasSelection = from.line !== to.line || from.ch !== to.ch;
+
+  // Determine what to move: either the selection or the sentence at cursor
+  let currentSentenceStart: EditorPosition;
+  let currentSentenceEnd: EditorPosition;
+
+  if (hasSelection) {
+    // Move the entire selection, snapped to sentence boundaries
+    // Start boundary: find sentence start from the beginning of selection
+    currentSentenceStart = findSentenceStart(editor, from);
+    // End boundary: find sentence end from the end of selection
+    currentSentenceEnd = findSentenceEnd(editor, to);
+  } else {
+    // No selection, just move the sentence containing the cursor
+    currentSentenceStart = findSentenceStart(editor, from);
+    currentSentenceEnd = findSentenceEnd(editor, from);
+  }
 
   // Get the current sentence text
   const currentSentenceText = editor.getRange(currentSentenceStart, currentSentenceEnd);
@@ -1006,6 +1039,7 @@ export const moveSentenceUp = (
 
   console.log('moveSentenceUp DEBUG:');
   console.log('  Selection from/to:', from, to);
+  console.log('  Has selection:', hasSelection);
   console.log('  Current sentence:', JSON.stringify(currentSentenceText));
   console.log('  Current sentence start/end:', currentSentenceStart, currentSentenceEnd);
 
