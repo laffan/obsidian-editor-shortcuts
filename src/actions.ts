@@ -758,7 +758,12 @@ export const moveSentenceDown = (
   // Find the next sentence
   let nextSentenceSearchPos = currentSentenceEnd;
 
-  // Skip whitespace after current sentence
+  // Track if we cross a paragraph break (empty line)
+  let crossesParagraphBreak = false;
+  let paragraphBreakStart: EditorPosition | null = null;
+  let paragraphBreakEnd: EditorPosition | null = null;
+
+  // Skip whitespace after current sentence, looking for paragraph breaks
   while (nextSentenceSearchPos.line < editor.lineCount()) {
     const lineContent = editor.getLine(nextSentenceSearchPos.line);
 
@@ -769,6 +774,26 @@ export const moveSentenceDown = (
       }
       nextSentenceSearchPos = { line: nextSentenceSearchPos.line, ch: nextSentenceSearchPos.ch + 1 };
     } else {
+      // At end of line, check if the next line is empty (paragraph break)
+      if (nextSentenceSearchPos.line + 1 < editor.lineCount()) {
+        const nextLine = nextSentenceSearchPos.line + 1;
+        const nextLineContent = editor.getLine(nextLine);
+
+        // If next line is empty or whitespace-only, it's a paragraph break
+        if (nextLineContent.trim().length === 0) {
+          crossesParagraphBreak = true;
+          paragraphBreakStart = { line: nextSentenceSearchPos.line, ch: lineContent.length };
+          // Find where paragraph break ends (skip all empty lines)
+          let breakEndLine = nextLine;
+          while (breakEndLine < editor.lineCount() && editor.getLine(breakEndLine).trim().length === 0) {
+            breakEndLine++;
+          }
+          paragraphBreakEnd = { line: breakEndLine, ch: 0 };
+          nextSentenceSearchPos = paragraphBreakEnd;
+          break;
+        }
+      }
+
       // Move to next line
       if (nextSentenceSearchPos.line + 1 >= editor.lineCount()) {
         // No more content
@@ -776,6 +801,27 @@ export const moveSentenceDown = (
       }
       nextSentenceSearchPos = { line: nextSentenceSearchPos.line + 1, ch: 0 };
     }
+  }
+
+  // If we cross a paragraph break, just move the sentence to the start of next paragraph
+  // Don't swap with any sentence
+  if (crossesParagraphBreak && paragraphBreakStart && paragraphBreakEnd) {
+    console.log('  Crosses paragraph break, moving without swapping');
+
+    // Remove sentence from current position
+    editor.replaceRange('', currentSentenceStart, currentSentenceEnd);
+
+    // Insert at start of next paragraph
+    const insertPos = editor.offsetToPos(editor.posToOffset(paragraphBreakEnd) - (editor.posToOffset(currentSentenceEnd) - editor.posToOffset(currentSentenceStart)));
+    editor.replaceRange(currentSentenceText, insertPos);
+
+    // Select the moved sentence
+    const newStart = insertPos;
+    const newEndOffset = editor.posToOffset(newStart) + currentSentenceLength;
+    const newEnd = editor.offsetToPos(newEndOffset);
+
+    console.log('  New selection text:', JSON.stringify(editor.getRange(newStart, newEnd)));
+    return { anchor: newStart, head: newEnd };
   }
 
   // Find the boundaries of the next sentence
@@ -907,6 +953,11 @@ export const moveSentenceUp = (
   // Find the previous sentence
   let prevSentenceSearchPos = currentSentenceStart;
 
+  // Track if we cross a paragraph break (empty line)
+  let crossesParagraphBreak = false;
+  let paragraphBreakStart: EditorPosition | null = null;
+  let paragraphBreakEnd: EditorPosition | null = null;
+
   // Move back one character to get out of current sentence
   if (prevSentenceSearchPos.ch > 0) {
     prevSentenceSearchPos = { line: prevSentenceSearchPos.line, ch: prevSentenceSearchPos.ch - 1 };
@@ -919,7 +970,7 @@ export const moveSentenceUp = (
     return selection;
   }
 
-  // Skip backwards through whitespace
+  // Skip backwards through whitespace, looking for paragraph breaks
   while (prevSentenceSearchPos.ch > 0 || prevSentenceSearchPos.line > 0) {
     const lineContent = editor.getLine(prevSentenceSearchPos.line);
 
@@ -930,6 +981,29 @@ export const moveSentenceUp = (
       }
       prevSentenceSearchPos = { line: prevSentenceSearchPos.line, ch: prevSentenceSearchPos.ch - 1 };
     } else {
+      // At beginning of line, check if current or previous line is empty (paragraph break)
+      const currentLineContent = editor.getLine(prevSentenceSearchPos.line);
+      if (currentLineContent.trim().length === 0) {
+        // Found a paragraph break
+        crossesParagraphBreak = true;
+        // Find where paragraph break starts (skip all empty lines going back)
+        let breakStartLine = prevSentenceSearchPos.line;
+        while (breakStartLine > 0 && editor.getLine(breakStartLine - 1).trim().length === 0) {
+          breakStartLine--;
+        }
+        // breakStartLine now points to first empty line after content
+        paragraphBreakStart = { line: breakStartLine - 1, ch: editor.getLine(breakStartLine - 1).length };
+        paragraphBreakEnd = { line: prevSentenceSearchPos.line, ch: 0 };
+
+        // Position search at end of previous paragraph
+        if (breakStartLine > 0) {
+          const prevContentLine = breakStartLine - 1;
+          const prevContentLineText = editor.getLine(prevContentLine);
+          prevSentenceSearchPos = { line: prevContentLine, ch: prevContentLineText.length };
+        }
+        break;
+      }
+
       if (prevSentenceSearchPos.line === 0) {
         break;
       }
@@ -937,6 +1011,30 @@ export const moveSentenceUp = (
       const prevLineContent = editor.getLine(prevLine);
       prevSentenceSearchPos = { line: prevLine, ch: prevLineContent.length };
     }
+  }
+
+  // If we cross a paragraph break, just move the sentence to end of previous paragraph
+  // Don't swap with any sentence
+  if (crossesParagraphBreak && paragraphBreakStart && paragraphBreakEnd) {
+    console.log('  Crosses paragraph break, moving without swapping');
+    console.log('  Paragraph break from', paragraphBreakStart, 'to', paragraphBreakEnd);
+
+    // Remove sentence from current position
+    editor.replaceRange('', currentSentenceStart, currentSentenceEnd);
+
+    // Insert at end of previous paragraph (after adjusting for the deletion)
+    const insertPos = editor.offsetToPos(
+      editor.posToOffset(paragraphBreakStart) - (editor.posToOffset(currentSentenceEnd) - editor.posToOffset(currentSentenceStart))
+    );
+    editor.replaceRange(currentSentenceText, insertPos);
+
+    // Select the moved sentence
+    const newStart = insertPos;
+    const newEndOffset = editor.posToOffset(newStart) + currentSentenceLength;
+    const newEnd = editor.offsetToPos(newEndOffset);
+
+    console.log('  New selection text:', JSON.stringify(editor.getRange(newStart, newEnd)));
+    return { anchor: newStart, head: newEnd };
   }
 
   // After skipping whitespace, we might be positioned right after the sentence-ending
