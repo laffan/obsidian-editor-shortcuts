@@ -778,8 +778,10 @@ export const moveSentenceDown = (
     // Move the entire selection, snapped to sentence boundaries
     // Start boundary: find sentence start from the beginning of selection
     currentSentenceStart = findSentenceStart(editor, from);
-    // End boundary: find sentence end from the end of selection
-    currentSentenceEnd = findSentenceEnd(editor, to);
+    // End boundary: find the sentence containing the end of selection
+    // (find its start first, then find the end from that start to avoid overshooting)
+    const endSentenceStart = findSentenceStart(editor, to);
+    currentSentenceEnd = findSentenceEnd(editor, endSentenceStart);
   } else {
     // No selection, just move the sentence containing the cursor
     currentSentenceStart = findSentenceStart(editor, from);
@@ -1023,8 +1025,10 @@ export const moveSentenceUp = (
     // Move the entire selection, snapped to sentence boundaries
     // Start boundary: find sentence start from the beginning of selection
     currentSentenceStart = findSentenceStart(editor, from);
-    // End boundary: find sentence end from the end of selection
-    currentSentenceEnd = findSentenceEnd(editor, to);
+    // End boundary: find the sentence containing the end of selection
+    // (find its start first, then find the end from that start to avoid overshooting)
+    const endSentenceStart = findSentenceStart(editor, to);
+    currentSentenceEnd = findSentenceEnd(editor, endSentenceStart);
   } else {
     // No selection, just move the sentence containing the cursor
     currentSentenceStart = findSentenceStart(editor, from);
