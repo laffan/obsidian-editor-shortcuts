@@ -696,10 +696,11 @@ export const reduceSentenceSelection = (
   const contentBeforeCursor = editor.getRange(lineStart, to);
   const sentenceMatches = Array.from(contentBeforeCursor.matchAll(/[.!?](?:\s|$)/g));
 
-  if (sentenceMatches.length >= 1) {
-    // Found a sentence ending, reduce to the last one before current position
-    const lastMatch = sentenceMatches[sentenceMatches.length - 1];
-    const matchEnd = (lastMatch.index ?? 0) + lastMatch[0].length;
+  // We need at least 2 matches: one for current position, one to reduce to
+  if (sentenceMatches.length >= 2) {
+    // Reduce to the second-to-last match (last one is current position)
+    const previousMatch = sentenceMatches[sentenceMatches.length - 2];
+    const matchEnd = (previousMatch.index ?? 0) + previousMatch[0].length;
     const newHead = { line: to.line, ch: lineStart.ch + matchEnd };
 
     // Make sure we're not reducing to a point before or at the anchor
