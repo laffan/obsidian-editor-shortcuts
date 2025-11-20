@@ -657,13 +657,13 @@ export const reduceSentenceSelection = (
     const lineStart = getLineStartPos(to.line);
     const contentBeforeCursor = editor.getRange(lineStart, to);
 
-    // Find the last sentence ending before the current position
+    // Find all sentence endings before the current position
     const sentenceMatches = Array.from(contentBeforeCursor.matchAll(/[.!?](?:\s|$)/g));
 
-    if (sentenceMatches.length > 0) {
-      // Found a sentence ending, reduce to just after it (including trailing space)
-      const lastMatch = sentenceMatches[sentenceMatches.length - 1];
-      const matchEnd = (lastMatch.index ?? 0) + lastMatch[0].length;
+    if (sentenceMatches.length >= 2) {
+      // Reduce to the second-to-last sentence ending (last one is current position)
+      const previousMatch = sentenceMatches[sentenceMatches.length - 2];
+      const matchEnd = (previousMatch.index ?? 0) + previousMatch[0].length;
       const newHead = { line: to.line, ch: lineStart.ch + matchEnd };
 
       // Make sure we're not reducing to a point before or at the anchor
@@ -696,8 +696,8 @@ export const reduceSentenceSelection = (
   const contentBeforeCursor = editor.getRange(lineStart, to);
   const sentenceMatches = Array.from(contentBeforeCursor.matchAll(/[.!?](?:\s|$)/g));
 
-  if (sentenceMatches.length > 0) {
-    // Found a sentence ending, reduce to just after it
+  if (sentenceMatches.length >= 1) {
+    // Found a sentence ending, reduce to the last one before current position
     const lastMatch = sentenceMatches[sentenceMatches.length - 1];
     const matchEnd = (lastMatch.index ?? 0) + lastMatch[0].length;
     const newHead = { line: to.line, ch: lineStart.ch + matchEnd };
