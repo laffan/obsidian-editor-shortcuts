@@ -678,6 +678,111 @@ export const reduceSentenceSelection = (
   return { anchor: sentenceStart, head: sentenceEnd };
 };
 
+/**
+ * Shifts the selection to the next sentence.
+ * Finds the next sentence after the current selection and moves the selection to it.
+ */
+export const shiftSelectionToNextSentence = (
+  editor: Editor,
+  selection: EditorSelection,
+) => {
+  const { from, to } = getSelectionBoundaries(selection);
+
+  // Start searching from the end of the current selection
+  let searchPos = to;
+
+  // Skip any trailing whitespace at the end of current selection
+  const lineContent = editor.getLine(searchPos.line);
+  while (searchPos.ch < lineContent.length && /\s/.test(lineContent.charAt(searchPos.ch))) {
+    searchPos = { line: searchPos.line, ch: searchPos.ch + 1 };
+  }
+
+  // If we're at the end of the line, move to the next line
+  if (searchPos.ch >= lineContent.length) {
+    if (searchPos.line + 1 >= editor.lineCount()) {
+      // No more lines
+      return selection;
+    }
+    searchPos = { line: searchPos.line + 1, ch: 0 };
+
+    // Skip empty lines
+    let nextLineContent = editor.getLine(searchPos.line);
+    while (nextLineContent.trim().length === 0) {
+      if (searchPos.line + 1 >= editor.lineCount()) {
+        return selection;
+      }
+      searchPos = { line: searchPos.line + 1, ch: 0 };
+      nextLineContent = editor.getLine(searchPos.line);
+    }
+
+    // Find first non-whitespace character
+    const firstNonWhitespace = nextLineContent.search(/\S/);
+    if (firstNonWhitespace !== -1) {
+      searchPos = { line: searchPos.line, ch: firstNonWhitespace };
+    }
+  }
+
+  // Find the start and end of the next sentence
+  const nextSentenceStart = findSentenceStart(editor, searchPos);
+  const nextSentenceEnd = findSentenceEnd(editor, searchPos);
+
+  return { anchor: nextSentenceStart, head: nextSentenceEnd };
+};
+
+/**
+ * Shifts the selection to the previous sentence.
+ * Finds the previous sentence before the current selection and moves the selection to it.
+ */
+export const shiftSelectionToPreviousSentence = (
+  editor: Editor,
+  selection: EditorSelection,
+) => {
+  const { from } = getSelectionBoundaries(selection);
+
+  // Start searching from the beginning of the current selection
+  let searchPos = from;
+
+  // Move back one character to get out of the current sentence
+  if (searchPos.ch > 0) {
+    searchPos = { line: searchPos.line, ch: searchPos.ch - 1 };
+  } else if (searchPos.line > 0) {
+    // Move to the end of the previous line
+    const prevLine = searchPos.line - 1;
+    const prevLineContent = editor.getLine(prevLine);
+    searchPos = { line: prevLine, ch: prevLineContent.length };
+  } else {
+    // Already at the beginning of the document
+    return selection;
+  }
+
+  // Skip backwards through any whitespace
+  while (searchPos.ch > 0 || searchPos.line > 0) {
+    const lineContent = editor.getLine(searchPos.line);
+
+    if (searchPos.ch > 0) {
+      const char = lineContent.charAt(searchPos.ch - 1);
+      if (!/\s/.test(char)) {
+        break;
+      }
+      searchPos = { line: searchPos.line, ch: searchPos.ch - 1 };
+    } else {
+      // At the beginning of a line, move to previous line
+      if (searchPos.line === 0) {
+        break;
+      }
+      const prevLine = searchPos.line - 1;
+      const prevLineContent = editor.getLine(prevLine);
+      searchPos = { line: prevLine, ch: prevLineContent.length };
+    }
+  }
+
+  // Find the start and end of the previous sentence
+  const prevSentenceStart = findSentenceStart(editor, searchPos);
+  const prevSentenceEnd = findSentenceEnd(editor, searchPos);
+
+  return { anchor: prevSentenceStart, head: prevSentenceEnd };
+};
+
 export const selectToEndOfSentence = (
   editor: Editor,
   selection: EditorSelection,
