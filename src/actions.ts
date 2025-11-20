@@ -951,9 +951,16 @@ export const shiftSelectionToPreviousSentence = (
     }
   }
 
-  // If we're on sentence-ending punctuation, move back to actual content
+  // If we're on sentence-ending punctuation or closing delimiters, move back to actual content
   // This prevents findSentenceEnd from finding the NEXT sentence
   const lineContent = editor.getLine(searchPos.line);
+
+  // Skip backwards through any closing delimiters
+  while (searchPos.ch > 0 && /["')\]}*_`]/.test(lineContent.charAt(searchPos.ch - 1))) {
+    searchPos = { line: searchPos.line, ch: searchPos.ch - 1 };
+  }
+
+  // Check if we're now on sentence-ending punctuation
   if (searchPos.ch > 0 && /[.!?]/.test(lineContent.charAt(searchPos.ch - 1))) {
     // Move back before the punctuation to land in the sentence content
     if (searchPos.ch > 1) {
