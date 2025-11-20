@@ -21,6 +21,7 @@ import {
   selectAllOccurrences,
   selectLine,
   selectSentence,
+  reduceSentenceSelection,
   selectToEndOfSentence,
   selectToStartOfSentence,
   selectWordOrNextOccurrence,
@@ -225,6 +226,13 @@ export default class CodeEditorShortcuts extends Plugin {
       name: 'Select sentence',
       editorCallback: (editor) =>
         withMultipleSelections(editor, selectSentence),
+    });
+
+    this.addCommand({
+      id: 'reduceSentenceSelection',
+      name: 'Reduce selection by sentence',
+      editorCallback: (editor) =>
+        withMultipleSelections(editor, reduceSentenceSelection),
     });
 
     this.addCommand({
