@@ -7,59 +7,67 @@
 
 This [Obsidian](https://obsidian.md) plugin adds keyboard shortcuts (hotkeys) commonly found in code editors such as Visual Studio Code or Sublime Text.
 
-| Command                                          | Shortcut \*                |
-| ------------------------------------------------ | -------------------------- |
-| Insert line below                                | `Ctrl` + `Enter`           |
-| Insert line above                                | `Ctrl` + `Shift` + `Enter` |
-| Delete line                                      | `Ctrl` + `Shift` + `K`     |
-| Duplicate line                                   | `Ctrl` + `Shift` + `D`     |
-| Copy line up                                     | `Alt` + `Shift` + `Up`     |
-| Copy line down                                   | `Alt` + `Shift` + `Down`   |
-| Join line below to current line                  | `Ctrl` + `J`               |
-| Select line (repeat to keep expanding selection) | `Ctrl` + `L`               |
-| Add cursors to selection ends                    | `Alt` + `Shift` + `I`      |
-| Select word or next occurrence of selection      | `Ctrl` + `D`               |
-| Select all occurrences of selection              | `Ctrl` + `Shift` + `L`     |
-| Move cursor up                                   | Not set                    |
-| Move cursor down                                 | Not set                    |
-| Move cursor left                                 | Not set                    |
-| Move cursor right                                | Not set                    |
-| Go to previous word                              | Not set                    |
-| Go to next word                                  | Not set                    |
-| Go to start of line                              | Not set                    |
-| Go to end of line                                | Not set                    |
-| Go to previous line                              | Not set                    |
-| Go to next line                                  | Not set                    |
-| Go to first line                                 | Not set                    |
-| Go to last line                                  | Not set                    |
-| Go to line number                                | Not set                    |
-| Delete to start of line                          | Not set                    |
-| Delete to end of line                            | Not set                    |
-| Delete to start of sentence                      | Not set                    |
-| Delete to end of sentence                        | Not set                    |
-| Transform selection to uppercase                 | Not set                    |
-| Transform selection to lowercase                 | Not set                    |
-| Transform selection to title case                | Not set                    |
-| Toggle case of selection                         | Not set                    |
-| Expand selection to brackets                     | Not set                    |
-| Expand selection to quotes                       | Not set                    |
-| Expand selection to quotes or brackets           | Not set                    |
-| Insert cursor above                              | Not set                    |
-| Insert cursor below                              | Not set                    |
-| Go to next heading                               | Not set                    |
-| Go to previous heading                           | Not set                    |
-| Toggle line numbers                              | Not set                    |
-| Indent using tabs                                | Not set                    |
-| Indent using spaces                              | Not set                    |
-| Undo                                             | Not set                    |
-| Redo                                             | Not set                    |
+| Command                                          | Shortcut \*                       |
+| ------------------------------------------------ | --------------------------------- |
+| Insert line below                                | `Ctrl` + `Enter`                  |
+| Insert line above                                | `Ctrl` + `Shift` + `Enter`        |
+| Delete line                                      | `Ctrl` + `Shift` + `K`            |
+| Duplicate line                                   | `Ctrl` + `Shift` + `D`            |
+| Copy line up                                     | `Ctrl` + `Shift` + `Up`           |
+| Copy line down                                   | `Ctrl` + `Shift` + `Down`         |
+| Join line below to current line                  | `Ctrl` + `J`                      |
+| Select line (repeat to keep expanding selection) | Not set                           |
+| Select sentence (repeat to expand selection)     | `Ctrl` + `L`                      |
+| Reduce selection by sentence                     | `Ctrl` + `Shift` + `L`            |
+| Shift selection to next sentence                 | `Ctrl` + `Shift` + `Right`        |
+| Shift selection to previous sentence             | `Ctrl` + `Shift` + `Left`         |
+| Select to end of sentence                        | `Alt` + `Shift` + `.`             |
+| Select to start of sentence                      | `Alt` + `Shift` + `,`             |
+| Move sentence forward                            | `Alt` + `Ctrl` + `Right`          |
+| Move sentence back                               | `Alt` + `Ctrl` + `Left`           |
+| Delete to end of sentence                        | `Alt` + `Shift` + `Backspace`     |
+| Add cursors to selection ends                    | `Alt` + `Shift` + `I`             |
+| Select word or next occurrence of selection      | `Ctrl` + `D`                      |
+| Select all occurrences of selection              | Not set                           |
+| Move cursor up                                   | Not set                           |
+| Move cursor down                                 | Not set                           |
+| Move cursor left                                 | Not set                           |
+| Move cursor right                                | Not set                           |
+| Go to previous word                              | Not set                           |
+| Go to next word                                  | Not set                           |
+| Go to start of line                              | Not set                           |
+| Go to end of line                                | Not set                           |
+| Go to previous line                              | Not set                           |
+| Go to next line                                  | Not set                           |
+| Go to first line                                 | Not set                           |
+| Go to last line                                  | Not set                           |
+| Go to line number                                | Not set                           |
+| Delete to start of line                          | Not set                           |
+| Delete to end of line                            | Not set                           |
+| Delete to start of sentence                      | Not set                           |
+| Transform selection to uppercase                 | Not set                           |
+| Transform selection to lowercase                 | Not set                           |
+| Transform selection to title case                | Not set                           |
+| Toggle case of selection                         | Not set                           |
+| Expand selection to brackets                     | Not set                           |
+| Expand selection to quotes                       | Not set                           |
+| Expand selection to quotes or brackets           | Not set                           |
+| Insert cursor above                              | Not set                           |
+| Insert cursor below                              | Not set                           |
+| Go to next heading                               | Not set                           |
+| Go to previous heading                           | Not set                           |
+| Toggle line numbers                              | Not set                           |
+| Indent using tabs                                | Not set                           |
+| Indent using spaces                              | Not set                           |
+| Undo                                             | Not set                           |
+| Redo                                             | Not set                           |
 
 \* On macOS, replace `Ctrl` with `Cmd` and `Alt` with `Opt`
 
 ### Important notes
 
 - `Ctrl` + `Enter` for 'Insert line below' may conflict with the default shortcut for _Open link under cursor in new tab_; changing/removing one of the bindings is recommended.
-- `Ctrl` + `L` for 'Select line' may conflict with the default shortcut for _Toggle checkbox status_; changing/removing one of the bindings is recommended.
+- `Ctrl` + `L` for 'Select sentence' may conflict with the default shortcut for _Toggle checkbox status_; changing/removing one of the bindings is recommended.
 - `Ctrl` + `D` for 'Select word or next occurrence of selection' will behave differently depending on how the initial selection was made. If it was also done via `Ctrl` + `D`, the command will only look for the entire word in subsequent matches. However, if the selection was done by hand, it will search within words as well.
 - 'Toggle case of selection' will cycle between uppercase, lowercase and title case.
 - If you are looking for the `Alt` + `Up` and `Alt` + `Down` shortcuts from VS Code, you can assign those hotkeys to Obsidian's built in actions "Move line up" and "Move line down".

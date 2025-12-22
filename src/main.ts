@@ -114,6 +114,12 @@ export default class CodeEditorShortcuts extends Plugin {
     this.addCommand({
       id: 'deleteToEndOfSentence',
       name: 'Delete to end of sentence',
+      hotkeys: [
+        {
+          modifiers: ['Alt', 'Shift'],
+          key: 'Backspace',
+        },
+      ],
       editorCallback: (editor) =>
         withMultipleSelections(editor, deleteToEndOfSentence),
     });
@@ -162,7 +168,7 @@ export default class CodeEditorShortcuts extends Plugin {
       name: 'Copy line up',
       hotkeys: [
         {
-          modifiers: ['Alt', 'Shift'],
+          modifiers: ['Ctrl', 'Shift'],
           key: 'ArrowUp',
         },
       ],
@@ -178,7 +184,7 @@ export default class CodeEditorShortcuts extends Plugin {
       name: 'Copy line down',
       hotkeys: [
         {
-          modifiers: ['Alt', 'Shift'],
+          modifiers: ['Ctrl', 'Shift'],
           key: 'ArrowDown',
         },
       ],
@@ -204,30 +210,24 @@ export default class CodeEditorShortcuts extends Plugin {
     this.addCommand({
       id: 'selectAllOccurrences',
       name: 'Select all occurrences',
-      hotkeys: [
-        {
-          modifiers: ['Mod', 'Shift'],
-          key: 'L',
-        },
-      ],
       editorCallback: (editor) => selectAllOccurrences(editor),
     });
 
     this.addCommand({
       id: 'selectLine',
       name: 'Select line',
-      hotkeys: [
-        {
-          modifiers: ['Mod'],
-          key: 'L',
-        },
-      ],
       editorCallback: (editor) => withMultipleSelections(editor, selectLine),
     });
 
     this.addCommand({
       id: 'selectSentence',
       name: 'Select sentence',
+      hotkeys: [
+        {
+          modifiers: ['Mod'],
+          key: 'L',
+        },
+      ],
       editorCallback: (editor) =>
         withMultipleSelections(editor, selectSentence),
     });
@@ -235,6 +235,12 @@ export default class CodeEditorShortcuts extends Plugin {
     this.addCommand({
       id: 'reduceSentenceSelection',
       name: 'Reduce selection by sentence',
+      hotkeys: [
+        {
+          modifiers: ['Mod', 'Shift'],
+          key: 'L',
+        },
+      ],
       editorCallback: (editor) =>
         withMultipleSelections(editor, reduceSentenceSelection),
     });
@@ -242,6 +248,12 @@ export default class CodeEditorShortcuts extends Plugin {
     this.addCommand({
       id: 'shiftSelectionToNextSentence',
       name: 'Shift selection to next sentence',
+      hotkeys: [
+        {
+          modifiers: ['Mod', 'Shift'],
+          key: 'ArrowRight',
+        },
+      ],
       editorCallback: (editor) =>
         withMultipleSelections(editor, shiftSelectionToNextSentence),
     });
@@ -249,6 +261,12 @@ export default class CodeEditorShortcuts extends Plugin {
     this.addCommand({
       id: 'shiftSelectionToPreviousSentence',
       name: 'Shift selection to previous sentence',
+      hotkeys: [
+        {
+          modifiers: ['Mod', 'Shift'],
+          key: 'ArrowLeft',
+        },
+      ],
       editorCallback: (editor) =>
         withMultipleSelections(editor, shiftSelectionToPreviousSentence),
     });
@@ -256,6 +274,12 @@ export default class CodeEditorShortcuts extends Plugin {
     this.addCommand({
       id: 'moveSentenceDown',
       name: 'Move sentence forward',
+      hotkeys: [
+        {
+          modifiers: ['Alt', 'Mod'],
+          key: 'ArrowRight',
+        },
+      ],
       editorCallback: (editor) =>
         withMultipleSelections(editor, moveSentenceDown),
     });
@@ -263,6 +287,12 @@ export default class CodeEditorShortcuts extends Plugin {
     this.addCommand({
       id: 'moveSentenceUp',
       name: 'Move sentence back',
+      hotkeys: [
+        {
+          modifiers: ['Alt', 'Mod'],
+          key: 'ArrowLeft',
+        },
+      ],
       editorCallback: (editor) =>
         withMultipleSelections(editor, moveSentenceUp),
     });
@@ -270,6 +300,12 @@ export default class CodeEditorShortcuts extends Plugin {
     this.addCommand({
       id: 'selectToEndOfSentence',
       name: 'Select to end of sentence',
+      hotkeys: [
+        {
+          modifiers: ['Alt', 'Shift'],
+          key: '.',
+        },
+      ],
       editorCallback: (editor) =>
         withMultipleSelections(editor, selectToEndOfSentence),
     });
@@ -277,6 +313,12 @@ export default class CodeEditorShortcuts extends Plugin {
     this.addCommand({
       id: 'selectToStartOfSentence',
       name: 'Select to start of sentence',
+      hotkeys: [
+        {
+          modifiers: ['Alt', 'Shift'],
+          key: ',',
+        },
+      ],
       editorCallback: (editor) =>
         withMultipleSelections(editor, selectToStartOfSentence),
     });
